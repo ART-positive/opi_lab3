@@ -149,20 +149,16 @@
     </target>
 
     <target name="report" depends="test">
-        <echo message="Committing test report to git..."/>
-        <tstamp>
-            <format property="current.datetime" pattern="yyyy-MM-dd HH:mm:ss"/>
-        </tstamp>
-        <exec executable="sh" failonerror="true">
-            <arg value="-c"/>
-            <arg value="git add -f ${junit.report.dir}/*.xml"/>
-        </exec>
-        <exec executable="git" failonerror="true">
-            <arg value="commit"/>
-            <arg value="-m"/>
-            <arg value="Add JUnit test report ${current.datetime}"/>
-        </exec>
-        <echo message="Report committed to git"/>
-    </target>
+    <tstamp>
+        <format property="current.datetime" pattern="yyyy-MM-dd HH:mm:ss"/>
+    </tstamp>
+    <exec executable="git" failonerror="true">
+        <arg line="add -f ${junit.report.dir}"/>
+    </exec>
+    <exec executable="git" failonerror="true">
+        <arg line="commit -m 'Add JUnit test report ${current.datetime}'"/>
+    </exec>
+</target>
+
 
 </project>
