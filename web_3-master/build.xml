@@ -1,0 +1,168 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<project name="Web3" xmlns:ivy="antlib:org.apache.ivy.ant" >
+    <property file="build.properties"/>
+    <property name="java.args" value=""/>
+    <property name="compile.version" value="21"/>
+    <path id="classpath">
+        <fileset dir="${lib.dir}" includes="*.jar"/>
+    </path>
+
+    <taskdef uri="antlib:org.apache.ivy.ant" resource="org/apache/ivy/ant/antlib.xml" classpath="${lib.dir}/ivy-2.5.3.jar"/>
+    <target name="resolve">
+        <ivy:resolve/>
+        <ivy:retrieve pattern="${lib.dir}/[artifact]-[revision](-[classifier]).[ext]"
+                      conf="compile" />
+        <ivy:retrieve pattern="${lib.dir}/[artifact]-[revision](-[classifier]).[ext]"
+                      conf="runtime" />
+        <ivy:retrieve pattern="${lib.dir}/[artifact]-[revision](-[classifier]).[ext]"
+                      conf="test" />
+    </target>
+
+    <target name="compile" depends="resolve, clean">
+        <echo message="Compiling..."/>
+        <mkdir dir="${build.classes}"/>
+        <mkdir dir="${test.build.classes}"/>
+        <javac srcdir="${java.dir}" destdir="${build.classes}" includeantruntime="false" classpathref="classpath" source="17" target="17">
+            <classpath>
+                <pathelement path="${lib.dir}"/>
+                <path refid="classpath"/>
+            </classpath>
+            <compilerarg line="${java.args}"/>
+        </javac>
+        <echo message="Compiled main classes"/>
+        <javac srcdir="${test.dir}" destdir="${test.build.classes}" includeantruntime="false">
+            <classpath>
+                <pathelement path="${build.classes}"/>
+                <path refid="classpath"/>
+            </classpath>
+        </javac>
+        <echo message="Compiled test classes"/>
+        <echo message="Compilation complete on version ${compile.version} with args ${java.args}"/>
+    </target>
+
+    <target name="doc" depends="generate-checksums, generate-javadoc">
+        <echo message="Documentation and checksums generated"/>
+    </target>
+
+    <target name="generate-checksums" depends="compile">
+        <echo message="Generating checksums..."/>
+        <mkdir dir="${checksums.dir}"/>
+
+        <checksum algorithm="MD5" fileext=".md5" todir="${checksums.dir}">
+            <fileset dir="${java.dir}" includes="**/*.java"/>
+            <fileset dir="${webapp.dir}" includes="**/*.*"/>
+        </checksum>
+
+        <checksum algorithm="SHA1" fileext=".sha1" todir="${checksums.dir}">
+            <fileset dir="${java.dir}" includes="**/*.java"/>
+            <fileset dir="${webapp.dir}" includes="**/*.*"/>
+        </checksum>
+    </target>
+
+    <target name="generate-javadoc" depends="compile">
+        <echo message="Generating Javadoc..."/>
+        <mkdir dir="${javadoc.dir}"/>
+        <javadoc
+                destdir="${javadoc.dir}"
+                sourcepath="${java.dir}"
+                classpathref="classpath"
+                packagenames="*"
+                version="true"
+                author="true"
+                use="true"
+                windowtitle="Project Documentation">
+
+            <doctitle>Project Documentation</doctitle>
+            <bottom>Copyright В© 2024</bottom>
+        </javadoc>
+    </target>
+
+    <target name="concat-checksums" depends="generate-checksums">
+        <concat destfile="${checksums.dir}/project.md5">
+            <fileset dir="${checksums.dir}" includes="**/*.md5" excludes="project.md5"/>
+        </concat>
+        <concat destfile="${checksums.dir}/project.sha1">
+            <fileset dir="${checksums.dir}" includes="**/*.sha1" excludes="project.sha1"/>
+        </concat>
+    </target>
+
+<target name="generate-manifest">
+    <manifest file="${build.dir}/MANIFEST.MF">
+        <attribute name="Manifest-Version" value="${version}"/>
+        <attribute name="Ant-Version" value="Apache Ant 1.10.15"/>
+        <attribute name="Descriptor" value="${web.xml}"/>
+        <attribute name="MD5-Hash" value="${md5.hash}"/>
+        <attribute name="SHA1-Hash" value="${sha1.hash}"/>
+    </manifest>
+</target>
+
+
+    <target name="build" depends="compile, doc, concat-checksums, generate-manifest">
+        <echo message="Building..."/>
+        <mkdir dir="${war.dir}"/>
+
+      
+
+        <war webxml="${web.xml}" destfile="${war.dir}/${war.name}" manifest="${build.dir}/MANIFEST.MF">
+            <classes dir="${build.classes}">
+    		<exclude name="war/**"/> 
+	    </classes>            
+	    <fileset dir="${webapp.dir}"/>
+            <lib dir="${lib.dir}">
+                <exclude name="javaee-api-*"/>
+                <exclude name="javax.*"/>
+            </lib>
+        </war>
+        <echo message="Build complete"/>
+    </target>
+
+    <target name="clean" depends="clean-classes, clean-tests">
+        <echo message="Cleaned"/>
+    </target>
+
+    <target name="clean-classes">
+        <echo message="Cleaning classes..."/>
+        <delete dir="${build.classes}"/>
+        <echo message="Cleaned classes"/>
+    </target>
+
+    <target name="clean-tests">
+        <echo message="Cleaning tests..."/>
+        <delete dir="${test.build.dir}"/>
+        <echo message="Cleaned tests"/>
+    </target>
+
+    <target name="test" depends="build">
+        <echo message="Running tests..."/>
+        <mkdir dir="${junit.report.dir}"/>
+        <junit printsummary="yes" haltonfailure="yes" fork="yes">
+            <classpath>
+                <pathelement path="${build.classes}"/>
+                <pathelement path="${test.build.classes}"/>
+                <path refid="classpath"/>
+            </classpath>
+            <formatter type="xml"/>
+            <batchtest todir="${junit.report.dir}">
+                <fileset dir="${test.build.classes}" includes="**/*Test.class"/>
+            </batchtest>
+        </junit>
+    </target>
+
+    <target name="report" depends="test">
+        <echo message="Committing test report to git..."/>
+        <tstamp>
+            <format property="current.datetime" pattern="yyyy-MM-dd HH:mm:ss"/>
+        </tstamp>
+        <exec executable="sh" failonerror="true">
+            <arg value="-c"/>
+            <arg value="git add -f ${junit.report.dir}/*.xml"/>
+        </exec>
+        <exec executable="git" failonerror="true">
+            <arg value="commit"/>
+            <arg value="-m"/>
+            <arg value="Add JUnit test report ${current.datetime}"/>
+        </exec>
+        <echo message="Report committed to git"/>
+    </target>
+
+</project>

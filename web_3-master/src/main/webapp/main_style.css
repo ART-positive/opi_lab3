@@ -1,0 +1,89 @@
+.main_header{
+    text-align: center;
+    width: 100%;
+    height: auto;
+    font-family: fantasy;
+    font-size:20px;
+    background-attachment: fixed;
+    background-color: white;
+    position: relative;
+    overflow: hidden;
+    border-radius: 0 0 10px 10px
+}
+.footer{
+    text-align: center;
+    width: 100%;
+    height: auto;
+    background-attachment: fixed;
+    background-color: white;
+    position: relative;
+    bottom:0;
+    /*margin-top: 10px;*/
+    overflow: hidden;
+    border-radius: 10px 10px 0 0;
+}
+.base{
+    width: 100%;
+    height: 100%;
+    padding: 0;
+    margin: 0;
+    align-items: center;
+    justify-content: center;
+    display: flex;
+    flex-direction: column;
+}
+body {
+    background-color: #ACC8E5;
+    padding: 0;
+    margin: 0;
+    box-sizing: border-box;
+}
+.q_entry{
+    text-align: center;
+    width: 85%;
+    height: auto;
+
+    background-color: white;
+    margin-bottom: 5px;
+    margin-top: 5px;
+    border-radius: 10px;
+    position: relative;
+    background-attachment: fixed;
+    padding: 5px;
+}
+#data{
+    display: flex;                  /* establish flex container */
+    flex-direction: column;            /* default value; can be omitted */
+    flex-wrap: nowrap;              /* default value; can be omitted */
+    justify-content: center;
+    width: 100%;
+    height: auto;
+    background-attachment: fixed;
+    position: relative;
+    align-items: center;
+}
+#goBackForm{
+    display: flex;                  /* establish flex container */
+    flex-direction: column;            /* default value; can be omitted */
+    flex-wrap: nowrap;              /* default value; can be omitted */
+    justify-content: center;
+    width: 20%;
+    height: auto;
+}
+#table{
+    width: 65%;
+    height: auto;
+    border-radius: 10px;
+    border: 1px solid black;
+}
+.t_d{
+    text-align: center;
+    border: 1px solid black;
+    padding: 5px;
+    border-radius: 10px;
+}
+#graph_div{
+    background-color: white;
+    padding: 5px;
+    border-radius: 10px;
+}
